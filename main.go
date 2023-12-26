@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"text/template"
 )
 
 type Page struct {
@@ -44,6 +45,18 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "<h1>%s</h1><div>%s</div>", p.Title, p.Body)
 }
 
+func editHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/edit/"):]
+	p, err := loadPage(title)
+	if(err != nil) {
+		p = &Page{Title: title}
+	}
+	t, _ := template.ParseFiles("edit.html")
+	t.Execute(w, p)
+}
+
+func saveHandler(w http.ResponseWriter, r *http.Request) {}
+
 func main() {
 	// fmt.Printf("Starting server at port 8080\n")
 
@@ -56,5 +69,7 @@ func main() {
 	// log.Fatal(http.ListenAndServe(":3000", nil))
 
 	http.HandleFunc("/view/", viewHandler)
-	log.Fatal(http.ListenAndServe(":3000", nil))
+	http.HandleFunc("/edit/", editHandler)
+	http.HandleFunc("/save/", saveHandler)
+	log.Fatal(http.ListenAndServe("localhost:3000", nil))
 }
