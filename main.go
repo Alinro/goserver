@@ -15,14 +15,19 @@ type Page struct {
 
 var templates = template.Must(template.ParseFiles("templates/edit.html", "templates/view.html"))
 var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
+var _ = os.Mkdir("data", 0700)
+
+func getFilepath(title string) string {
+	return "data/" + title + ".txt"
+}
 
 func (p *Page) save() error {
-	filename := p.Title + ".txt"
+	filename := getFilepath(p.Title)
 	return os.WriteFile(filename, p.Body, 0600)
 }
 
 func loadPage(title string) (*Page, error) {
-	filename := title + ".txt"
+	filename := getFilepath(title)
 	body, err := os.ReadFile((filename))
 
 	if err != nil {
