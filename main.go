@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -29,30 +28,32 @@ func loadPage(title string) (*Page, error) {
 	return &Page{Title: title, Body: body}, nil
 }
 
-// func handler(w http.ResponseWriter, r *http.Request) {
-// 	fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
-// }
+func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
+	t, _ := template.ParseFiles(tmpl + ".html")
+	t.Execute(w, p)
+}
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len("/view/"):]
 	p, err := loadPage(title)
 
 	if err != nil {
-		fmt.Fprintf(w, "<h1>Error: %s</h1>", err)
+		http.Redirect(w, r, "/edit/" + title, http.StatusFound)
 		return
 	}
 
-	fmt.Fprintf(w, "<h1>%s</h1><div>%s</div>", p.Title, p.Body)
+	renderTemplate(w, "view", p)
 }
 
 func editHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len("/edit/"):]
 	p, err := loadPage(title)
+	
 	if(err != nil) {
 		p = &Page{Title: title}
 	}
-	t, _ := template.ParseFiles("edit.html")
-	t.Execute(w, p)
+	
+	renderTemplate(w, "edit", p)
 }
 
 func saveHandler(w http.ResponseWriter, r *http.Request) {}
